@@ -1,4 +1,6 @@
 
+![Tool Overview](http://www.brendangregg.com/Perf/linux_observability_tools.png)
+
 ## Tools
 * `htop`
 * `mpstat`, `vmstat`, `iostat` vom Package `sysstat`
