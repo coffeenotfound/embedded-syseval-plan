@@ -8,9 +8,9 @@
 ## Probleme & Lösungen
 
 ### Index
+* [Vollständigen Systemüberblick erhalten]
+* [Überblick loggen]
 * CPU
-  * [Vollständigen Systemüberblick erhalten]
-  * [Überblick loggen]
   * [Per-Core Auslastung loggen]
   * [Fehlender Parallelismus]
   * [Hohe %IRQ-Auslastung]
@@ -20,9 +20,7 @@
 * Network IO
 
 
-### CPU
-
-#### Vollständigen Systemüberblick erhalten
+### Vollständigen Systemüberblick erhalten
 **Tool:** `htop`
 
 `htop` gibt einen vollständigen Snapshot des Systemperformancestatus, protokolliert diesen jedoch nicht über einen Zeitraum. Es ist daher gut dafür geeignet einen
@@ -55,7 +53,7 @@ Bedeutung der Standardspalten:
 * **TIME+** - Totale verbrauchte User- und Systemzeit des Prozesses
 * **COMMAND** - Commandline die den Prozess gestartet hat
 
-#### Überblick loggen
+### Überblick loggen
 `vmstat` loggt zyklisch einen gröberen Überblick über das System.
 Der Datensatz ist nicht per Prozess und auch weniger ausführlich als
 der von `htop` jedoch kann er über einen längeren Zeitraum zyklisch
@@ -93,6 +91,8 @@ procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
  2  0      0 12692592 174584 2304784    0    0     0     0 4757 8304  2  1 98  0  0
  0  0      0 12692592 174584 2304784    0    0     0    20 1214 2181  1  0 99  0  0
 ```
+
+### CPU
 
 #### Per-Core Auslastung loggen
 `mpstat -P ALL` loggt zyklisch verschiedenen CPU-Auslastungswerte per Core.
