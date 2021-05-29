@@ -16,6 +16,9 @@
   * [Hohe %IRQ-Auslastung]
   * [Fine-grained Profiling mit perf]
 * Memory
+  * [Überschüssige Swaps]
+  * [Memory-leak bemerken]
+  * [Memory-leak debuggen mit Valgrind]
 * Disk IO
 * Network IO
 
@@ -154,7 +157,91 @@ _todo_
 
 
 ### Memory
+
+#### Überschüssige Swaps
+Ein nah voller physikalischer Speicher kann sich stark negativ auf die Performance auswirken.
+
+Die Spalten `MAJFLT` (Major Fault) sowie `CMAJFLT` (Major Faults of Child Processes) in `htop`
+zeigen die Anzahl der Page Faults die das laden einer swapped-out Page zur Folge hatten.
+Analog zeigen `MINFLT` und `CMINFLT` die Anzahl der Page Faults ohne swap-in, hauptsächlich
+verursacht durch lazy Memory-allocation. Letztere sind jedoch generell vernachlässigbar.
+
+```
+  1  [                                              0.0%]   5  [                                              0.0%]
+  2  [                                              0.0%]   6  [                                              0.0%]
+  3  [                                              0.0%]   7  [                                              0.0%]
+  4  [                                              0.0%]   8  [                                              0.0%]
+  Mem[|||||||||||                            1.18G/15.6G]   Tasks: 141, 381 thr; 1 running
+  Swp[                                           0K/472M]   Load average: 0.07 0.06 0.10 
+                                                            Uptime: 00:23:27
+
+     MAJFLT     CMAJFLT   PID USER      PRI  NI  VIRT   RES   SHR S CPU% MEM%   TIME+  Command
+         86        7926     1 root       20   0  220M  9464  6636 S  0.0  0.1  0:04.32 /sbin/init splash
+        155           0   297 root       19  -1  101M 26336 25236 S  0.0  0.2  0:00.68 /lib/systemd/systemd-journald
+          5         265   316 root       20   0 34720  4600  2872 S  0.0  0.0  0:00.28 /lib/systemd/systemd-udevd
+          4           0   627 systemd-r  20   0 70784  5480  4916 S  0.0  0.0  0:00.08 /lib/systemd/systemd-resolved
+          1           0   666 root       20   0  4548   892   832 S  0.0  0.0  0:00.04 /usr/sbin/acpid
+          9           0   667 messagebu  20   0 51716  6272  3992 S  0.0  0.0  0:01.44 /usr/bin/dbus-daemon --system --a
+         24           0   749 root       20   0 45228  5268  4724 S  0.0  0.0  0:00.03 /sbin/wpa_supplicant -u -s -O /ru
+         15          19   752 root       20   0  281M  7168  6208 S  0.0  0.0  0:00.23 /usr/lib/accountsservice/accounts
+         62           0   753 root       20   0  617M 16876 13996 S  0.0  0.1  0:00.48 /usr/sbin/NetworkManager --no-dae
+          5           0   760 avahi      20   0 47252  3208  2868 S  0.0  0.0  0:00.12 avahi-daemon: running [StudiumROS
+         40           0   761 root       20   0  352M  9572  8160 S  0.0  0.1  0:00.11 /usr/sbin/ModemManager --filter-p
+         28           4   763 root       20   0  491M 10796  8632 S  0.0  0.1  0:00.20 /usr/lib/udisks2/udisksd
+         41           1   771 root       20   0  166M 17704  9752 S  0.0  0.1  0:00.32 /usr/bin/python3 /usr/bin/network
+          2           0   774 root       20   0  107M  2060  1840 S  0.0  0.0  0:00.03 /usr/sbin/irqbalance --foreground
+         10           0   775 syslog     20   0  256M  4540  3768 S  0.0  0.0  0:00.11 /usr/sbin/rsyslogd -n
+          1           0   776 root       20   0 70756  6128  5312 S  0.0  0.0  0:00.31 /lib/systemd/systemd-logind
+          1           0   778 root       20   0 31644  3236  2952 S  0.0  0.0  0:00.00 /usr/sbin/cron -f
+          0           0   783 root       20   0  107M  2060  1840 S  0.0  0.0  0:00.00 /usr/sbin/irqbalance --foreground
+          0          19   785 root       20   0  281M  7168  6208 S  0.0  0.0  0:00.16 /usr/lib/accountsservice/accounts
+          0           0   786 avahi      20   0 47072   340     0 S  0.0  0.0  0:00.00 avahi-daemon: chroot helper
+          0          19   795 root       20   0  281M  7168  6208 S  0.0  0.0  0:00.02 /usr/lib/accountsservice/accounts
+          0           4   797 root       20   0  491M 10796  8632 S  0.0  0.1  0:00.00 /usr/lib/udisks2/udisksd
+F1Help  F2Setup F3SearchF4FilterF5Tree  F6SortByF7Nice -F8Nice +F9Kill  F10Quit
+```
+
+#### Memory-leak bemerken
+Will man wissen ob das System einen potentiellen Memory-leak hat kann man das Tool
+`vmstat` benutzen.
+
+`vmstat -tn 60 > ~/memleak.txt` loggt alle 60 Sekunden die Speicherauslastung mit Timestamp in die Datei `memleak.txt`.
+Zeigt diese dass der Speicherauslastung kontinuierlich heranwächst und das unerwartete abstürzen eines Programmes
+zeitgleich mit einem deutlich leereren Speicher dahergeht könnte dies auf ein Speicherleck hinweisen
+das potentiell von diesem Programm verursacht wird.
+
+```
+dude@rechner:~$ vmstat -tn 60 > ~/memleak.txt
+dude@rechner:~$ cat ~/memleak.txt
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu----- -----timestamp-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st                CEST
+ 0  0      0 13120452 202140 1886436    0    0    70    63   83  129  1  0 99  0  0 2021-05-28 18:33:09
+ 0  0      0 13120452 202140 1886360    0    0     0     0 1532 2824  1  0 99  0  0 2021-05-28 18:34:09
+ 0  0      0 13120452 202140 1886360    0    0     0     0  238  435  0  0 100  0  0 2021-05-28 18:35:09
+ 1  0      0 13120452 202148 1886360    0    0     0    52 2303 4317  1  0 99  0  0 2021-05-28 18:36:09
+ 0  0      0 13120452 202148 1886360    0    0     0     0 2214 4117  1  0 99  0  0 2021-05-28 18:37:09
+ 0  0      0 13120452 202148 1886360    0    0     0     0  225  421  0  0 100  0  0 2021-05-28 18:38:09
+ 2  0      0 13120452 202148 1886360    0    0     0     0  157  270  0  0 100  0  0 2021-05-28 18:39:09
+ 0  0      0 13120452 202148 1886360    0    0     0     0  217  391  0  0 100  0  0 2021-05-28 18:40:09
+ 0  0      0 13120452 202148 1886360    0    0     0     0  226  388  0  0 100  0  0 2021-05-28 18:41:09
+ 0  0      0 13120452 202156 1886360    0    0     0    12  175  300  0  0 100  0  0 2021-05-28 18:42:09
+ 0  0      0 13120452 202156 1886360    0    0     0     0  256  477  0  0 100  0  0 2021-05-28 18:43:09
+ 0  0      0 13120452 202156 1886360    0    0     0     0  234  403  0  0 100  0  0 2021-05-28 18:44:09
+ 0  0      0 13120452 202156 1886360    0    0     0     0   81  114  0  0 100  0  0 2021-05-28 18:45:09
+ 0  0      0 13120452 202156 1886360    0    0     0     0   84  146  0  0 100  0  0 2021-05-28 18:46:09
+ 0  0      0 13120452 202156 1886360    0    0     0     0   81  133  0  0 100  0  0 2021-05-28 18:47:09
+ 0  0      0 13120452 202164 1886360    0    0     0    12   89  132  0  0 100  0  0 2021-05-28 18:48:09
+ 0  0      0 13120452 202164 1886360    0    0     0     0   70  119  0  0 100  0  0 2021-05-28 18:49:09
+ 0  0      0 13120452 202164 1886360    0    0     0     0  104  143  0  0 100  0  0 2021-05-28 18:50:09
+ 0  0      0 13120452 202164 1886360    0    0     0     0   78  125  0  0 100  0  0 2021-05-28 18:51:09
+ 0  0      0 13120452 202164 1886360    0    0     0     0  984 1973  0  0 100  0  0 2021-05-28 18:52:09
+ 0  0      0 13120452 202164 1886360    0    0     0     0   74  123  0  0 100  0  0 2021-05-28 18:53:09
+```
+
+#### Memory-leak debuggen mit Valgrind
 _todo_
+
+
 
 ### Disk IO
 _todo_
