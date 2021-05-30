@@ -206,9 +206,9 @@ Will man wissen ob das System einen potentiellen Memory-leak hat kann man das To
 `vmstat` benutzen.
 
 `vmstat -tn 60 > ~/memleak.txt` loggt alle 60 Sekunden die Speicherauslastung mit Timestamp in die Datei `memleak.txt`.
-Zeigt diese dass der Speicherauslastung kontinuierlich heranwächst und das unerwartete abstürzen eines Programmes
-zeitgleich mit einem deutlich leereren Speicher dahergeht könnte dies auf ein Speicherleck hinweisen
-das potentiell von diesem Programm verursacht wird.
+Zeigt diese, dass die Speicherauslastung kontinuierlich heranwächst und wenn ein unerwartetes Abstürzen eines Programmes
+zeitgleich mit einem deutlich leereren Speicher dahergeht könnte dies auf ein Speicherleck hinweisen,
+das potentiell von jenem Programm verursacht wird.
 
 ```
 dude@rechner:~$ vmstat -tn 60 > ~/memleak.txt
