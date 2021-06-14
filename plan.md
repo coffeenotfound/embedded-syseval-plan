@@ -242,9 +242,129 @@ procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
 _todo_
 
 
-
 ### Disk IO
-_todo_
+
+#### Geräteauslastung loggen
+Mit `iostat -x <interval>` lässt sich die Geräteauslastung von Platten und anderen Geräten periodisch loggen.
+
+Fällt bei einem Gerät eine besonders hohe Lese- oder Schreibauslastung und hohe Latenzen gleichzeitig auf,
+kann das ein gutes Indiz dafür sein dass das Gerät aus- oder überlastet ist.
+Der `%util` Spalte kann man jedoch nicht trauen. Sie gibt lediglich die Verbrauchte CPU Zeit an was ausschließlich
+bei sequentiellen Operationen akkurat ist.
+
+| Spalte  | Bedeutung   |
+| ------- | ----------- |
+| `r/s`   | Anzahl an Lesebefehlen abgeschlossen pro Sekunde auf dem Gerät |
+| `w/s`   | Anzahl an Schreibbefehlen abgeschlossen pro Sekunde auf dem Gerät |
+| `rkB/s` | Datenmenge gelesen pro Sekunde von dem Gerät |
+| `wkB/s` | Datenmenge geschrieben pro Sekunde in das Gerät |
+| `rrqm/s`   | Anzahl an Lesebefehlen die gemerged wurden |
+| `wrqm/s`   | Anzahl an Schreibbefehlen die gemerged wurden |
+| `%rrqm` | Prozent der Lesebefehle die gemerged wurden vor dem Senden zum Gerät |
+| `%wrqm` | Prozent der Schreibbefehle die gemerged wurden vor dem Senden zum Gerät |
+| `r_await`  | Durchschnittliche Latenz in Millisekunden von Lesebefehlen |
+| `w_await`  | Durchschnittliche Latenz in Millisekunden von Schreibbefehlen |
+| `aqu-sz`   | Durschnittliche Queue-länge der Befehle die an das Gerät gesendet wurden |
+| `rareq-sz` | Durschnittliche Größe in KB von Lesebefehlen die an das Gerät gesendet wurden |
+| `wareq-sz` | Durschnittliche Größe in KB von Schreibbefehlen die an das Gerät gesendet wurden |
+| `svctm` | _Deprecated_ |
+| `%util` | Prozent Zeit die benutzt wird um Befehle an das Gerät zu senden (irreführender Wert) |
+
+**Beispiel:**
+```
+dude@rechner:~$ iostat -x 1
+Linux 5.4.0-73-generic (rechner) 	14.06.2021 	_x86_64_	(8 CPU)
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0,68    0,15    0,27    0,04    0,00   98,87
+
+Device            r/s     w/s     rkB/s     wkB/s   rrqm/s   wrqm/s  %rrqm  %wrqm r_await w_await aqu-sz rareq-sz wareq-sz  svctm  %util
+loop0            0,09    0,00      0,20      0,00     0,00     0,00   0,00   0,00    0,18    0,00   0,00     2,38     0,00   0,32   0,00
+loop1            0,22    0,00      0,62      0,00     0,00     0,00   0,00   0,00    0,19    0,00   0,00     2,86     0,00   0,25   0,01
+loop2            0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    0,83    0,00   0,00     2,63     0,00   1,13   0,00
+loop3            0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    1,68    0,00   0,00     2,42     0,00   2,32   0,00
+loop4            0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    1,00    0,00   0,00     2,59     0,00   1,65   0,00
+loop5            0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    0,76    0,00   0,00     2,71     0,00   1,14   0,00
+loop6            0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    0,78    0,00   0,00     2,50     0,00   1,33   0,00
+loop7            0,08    0,00      0,20      0,00     0,00     0,00   0,00   0,00    0,23    0,00   0,00     2,40     0,00   0,40   0,00
+sda             21,17   25,50    575,60    804,30    12,55    24,12  37,22  48,61    0,48    0,25   0,01    27,18    31,54   0,31   1,42
+loop8            4,26    0,00      4,67      0,00     0,00     0,00   0,00   0,00    1,34    0,00   0,00     1,10     0,00   0,15   0,06
+loop9            0,21    0,00      0,61      0,00     0,00     0,00   0,00   0,00    0,28    0,00   0,00     2,94     0,00   0,32   0,01
+loop10           0,04    0,00      0,44      0,00     0,00     0,00   0,00   0,00    1,06    0,00   0,00    11,67     0,00   1,06   0,00
+loop11           0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    1,46    0,00   0,00     2,63     0,00   1,48   0,00
+loop12           0,03    0,00      0,43      0,00     0,00     0,00   0,00   0,00    1,61    0,00   0,00    14,55     0,00   1,03   0,00
+loop13           0,05    0,00      0,47      0,00     0,00     0,00   0,00   0,00    0,60    0,00   0,00    10,02     0,00   0,76   0,00
+loop14           0,09    0,00      0,50      0,00     0,00     0,00   0,00   0,00    0,18    0,00   0,00     5,41     0,00   0,40   0,00
+loop15           0,07    0,00      0,47      0,00     0,00     0,00   0,00   0,00    4,39    0,00   0,00     7,24     0,00   2,55   0,02
+loop16           0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    8,47    0,00   0,00     2,42     0,00   6,11   0,00
+loop17           0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    1,08    0,00   0,00     3,05     0,00   1,37   0,00
+loop18           0,00    0,00      0,00      0,00     0,00     0,00   0,00   0,00    0,00    0,00   0,00     1,00     0,00   1,00   0,00
+```
+
+#### Prozess mit hoher Disk-Auslatung finden
+Um einen Prozess mit hoher Auslastung zu finden bieten sich in `htop` die Spalten
+`IO_READ_RATE` und `IO_WRITE_RATE` an.
+Diese zeigen den IO-Durchgang des Prozesses in bytes pro Sekunde an.
+Der IO-Durchgang misst alle Geräte inklusive Blockgeräten und Netzwerkadapter.
+
+```
+  1  [                                                           0.0%]   5  [                                                           0.0%]
+  2  [                                                           0.0%]   6  [                                                           0.0%]
+  3  [                                                           0.0%]   7  [                                                           0.0%]
+  4  [|                                                          0.7%]   8  [                                                           0.0%]
+  Mem[||||||||||||||||                                    1.18G/15.6G]   Tasks: 144, 383 thr; 1 running
+  Swp[                                                        0K/472M]   Load average: 0.31 0.12 0.08 
+                                                                         Uptime: 01:09:59
+
+  DISK READ  DISK WRITE      MAJFLT     CMAJFLT   PID USER      PRI  NI  VIRT   RES   SHR S CPU% MEM%   TIME+  Command
+   4.30 B/s    1.20 B/s          86        7230     1 root       20   0  220M  9564  6724 S  0.0  0.1  0:03.30 /sbin/init splash
+   0.00 B/s    0.00 B/s         101           0   299 root       19  -1  109M 14628 13488 S  0.0  0.1  0:00.30 /lib/systemd/systemd-journald
+   0.00 B/s    0.00 B/s           5         256   317 root       20   0 34628  4748  2924 S  0.0  0.0  0:00.17 /lib/systemd/systemd-udevd
+   0.00 B/s    0.00 B/s           4           0   513 systemd-r  20   0 70784  6228  5536 S  0.0  0.0  0:00.07 /lib/systemd/systemd-resolved
+   0.00 B/s    0.00 B/s           6           0   693 avahi      20   0 47252  3320  2976 S  0.0  0.0  0:00.05 avahi-daemon: running [StudiumROS.l
+   0.00 B/s    0.00 B/s           0           1   880 root       20   0  166M 17516  9568 S  0.0  0.1  0:00.00 /usr/bin/python3 /usr/bin/networkd-
+   0.00 B/s    0.00 B/s          44           1   700 root       20   0  166M 17516  9568 S  0.0  0.1  0:00.11 /usr/bin/python3 /usr/bin/networkd-
+   0.00 B/s    0.00 B/s           0          19   719 root       20   0  281M  6988  6032 S  0.0  0.0  0:00.08 /usr/lib/accountsservice/accounts-d
+   0.00 B/s    0.00 B/s           0          19   757 root       20   0  281M  6988  6032 S  0.0  0.0  0:00.02 /usr/lib/accountsservice/accounts-d
+   0.00 B/s    0.00 B/s          15          19   702 root       20   0  281M  6988  6032 S  0.0  0.0  0:00.14 /usr/lib/accountsservice/accounts-d
+   0.00 B/s    0.00 B/s           0           0   740 root       20   0  424M  9588  8124 S  0.0  0.1  0:00.00 /usr/sbin/ModemManager --filter-pol
+   0.00 B/s    0.00 B/s           0           0   756 root       20   0  424M  9588  8124 S  0.0  0.1  0:00.00 /usr/sbin/ModemManager --filter-pol
+   0.00 B/s    0.00 B/s          40           0   705 root       20   0  424M  9588  8124 S  0.0  0.1  0:00.06 /usr/sbin/ModemManager --filter-pol
+   0.00 B/s    0.00 B/s           0           0   714 root       20   0  107M  2044  1824 S  0.0  0.0  0:00.00 /usr/sbin/irqbalance --foreground
+   0.00 B/s    0.00 B/s           3           0   708 root       20   0  107M  2044  1824 S  0.0  0.0  0:00.08 /usr/sbin/irqbalance --foreground
+   0.00 B/s    0.00 B/s           3           0   712 messagebu  20   0 51804  6500  4132 S  0.0  0.0  0:01.00 /usr/bin/dbus-daemon --system --add
+   0.00 B/s    0.00 B/s           0           0   718 avahi      20   0 47072   344     0 S  0.0  0.0  0:00.00 avahi-daemon: chroot helper
+   0.00 B/s    0.00 B/s          24           0   758 root       20   0 45228  5300  4760 S  0.0  0.0  0:00.04 /sbin/wpa_supplicant -u -s -O /run/
+   0.00 B/s    0.00 B/s           1           0   759 root       20   0 31644  3448  3152 S  0.0  0.0  0:00.00 /usr/sbin/cron -f
+   0.00 B/s    0.00 B/s           0           4   805 root       20   0  491M 11140  8796 S  0.0  0.1  0:00.00 /usr/lib/udisks2/udisksd
+   0.00 B/s    0.00 B/s           0           4   807 root       20   0  491M 11140  8796 S  0.0  0.1  0:00.00 /usr/lib/udisks2/udisksd
+F1Help  F2Setup F3SearchF4FilterF5Tree  F6SortByF7Nice -F8Nice +F9Kill  F10Quit
+
+```
+
+#### SMART-Informationen auslesen (unterstützte Platten)
+**Tool:** `smartctl` aus `smartmontools`
+
+Auf Platten die SMART unterstützen lassen sich mit dem Tool `smartctl` Informationen auslesen.
+Hohe IO-Latenzen oder schlechte Throughput-Werte aus `iostat` können an abgenutzten Flashspeicher liegen,
+wenn die `Remaining` Spalte eine hohe Abnutzung zeigt.
+
+Die SMART-Werte sind jedoch nur auf unterstützten Platten verfügbar und sind in manchen Fällen nicht 100% akkurat.
+
+**Beispiel:**
+```
+dude@rechner:~$ sudo smartctl -a /dev/sda
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Short offline       Completed without error       00%     17877         -
+# 2  Extended offline    Completed without error       00%      8449         -
+# 3  Short offline       Completed without error       00%      8446         -
+# 4  Short offline       Completed without error       00%      1307         -
+# 5  Short offline       Completed without error       00%         2         -
+# 6  Extended offline    Self-test routine in progress 90%     17877         -
+```
+
 
 ### Network IO
 _todo_
+
