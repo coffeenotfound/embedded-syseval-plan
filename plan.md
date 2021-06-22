@@ -3,7 +3,7 @@
 
 ## Tools
 * `htop`
-* `mpstat`, `vmstat`, `iostat` vom Package `sysstat`
+* `mpstat`, `vmstat`, `iostat` aus dem Package `sysstat`
 
 ## Probleme & Lösungen
 
@@ -301,7 +301,7 @@ loop17           0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,0
 loop18           0,00    0,00      0,00      0,00     0,00     0,00   0,00   0,00    0,00    0,00   0,00     1,00     0,00   1,00   0,00
 ```
 
-#### Prozess mit hoher Disk-Auslatung finden
+#### Prozess mit hoher Disk-Auslastung finden
 Um einen Prozess mit hoher Auslastung zu finden bieten sich in `htop` die Spalten
 `IO_READ_RATE` und `IO_WRITE_RATE` an.
 Diese zeigen den IO-Durchgang des Prozesses in bytes pro Sekunde an.
