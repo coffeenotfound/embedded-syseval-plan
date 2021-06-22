@@ -4,6 +4,7 @@
 ## Tools
 * `htop`
 * `mpstat`, `vmstat`, `iostat` aus dem Package `sysstat`
+* `smartctl` aus dem Package `smartmontools`
 * `mmc` aus dem Package `mmc-utils`
 
 ## Probleme & Lösungen
