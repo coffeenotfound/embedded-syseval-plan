@@ -22,6 +22,10 @@
   * [Memory-leak bemerken]
   * [Memory-leak debuggen mit Valgrind]
 * Disk IO
+  * [Geräteauslastung loggen]
+  * [Prozess mit hoher Disk-Auslastung finden]
+  * [SMART-Informationen auslesen (unterstützte Platten)]
+  * [MMC-Informationen auslesen (unterstützte Geräte)]
 * Network IO
 
 
