@@ -4,6 +4,7 @@
 ## Tools
 * `htop`
 * `mpstat`, `vmstat`, `iostat` aus dem Package `sysstat`
+* `mmc` aus dem Package `mmc-utils`
 
 ## Probleme & Lösungen
 
@@ -362,6 +363,69 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 # 4  Short offline       Completed without error       00%      1307         -
 # 5  Short offline       Completed without error       00%         2         -
 # 6  Extended offline    Self-test routine in progress 90%     17877         -
+```
+
+#### MMC-Informationen auslesen (unterstützte Geräte)
+**Tool:** `mmc` aus `mmc-utils`
+
+Mit dem Tool `mmc` lassen sich MMC-Informationen auslesen.
+
+Wichtige Zeilen:
+| Zeile | Bedeutung |
+| ----- | --------- |
+| `EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A` | Ungefähr maximales verbrauchtes Leben der SLC Blöcke in 10% Schritten (`0x01` = 0%-10%, `0x02%` = 10%-20%, ..)|
+| `EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B` | Ungefähr maximales verbrauchtes Leben der MLC Blöcke |
+| `EXT_CSD_PRE_EOL_INFO` | Status der reservierten Blöcke. (`0x01`: Normal, weniger als 80% der reservierten Blöcke in Benutzung. `0x02`: Warnung, 80% in Benutzung. `0x03`: Dringend, 90% in Benutzung) |
+
+```
+dude@rechner:~$ mmc extcsd read /dev/mmcblk0
+=============================================
+  Extended CSD rev 1.8 (MMC 5.1)
+=============================================
+
+Card Supported Command sets [S_CMD_SET: 0x01]
+HPI Features [HPI_FEATURE: 0x01]: implementation based on CMD13
+Background operations support [BKOPS_SUPPORT: 0x01]
+Max Packet Read Cmd [MAX_PACKED_READS: 0x3c]
+Max Packet Write Cmd [MAX_PACKED_WRITES: 0x3c]
+Data TAG support [DATA_TAG_SUPPORT: 0x01]
+Data TAG Unit Size [TAG_UNIT_SIZE: 0x03]
+Tag Resources Size [TAG_RES_SIZE: 0x00]
+Context Management Capabilities [CONTEXT_CAPABILITIES: 0x05]
+Large Unit Size [LARGE_UNIT_SIZE_M1: 0x03]
+Extended partition attribute support [EXT_SUPPORT: 0x03]
+Generic CMD6 Timer [GENERIC_CMD6_TIME: 0x19]
+Power off notification [POWER_OFF_LONG_TIME: 0xff]
+Cache Size [CACHE_SIZE] is 512 KiB
+Background operations status [BKOPS_STATUS: 0x00]
+1st Initialisation Time after programmed sector [INI_TIMEOUT_AP: 0x64]
+[...]
+Native sector size [NATIVE_SECTOR_SIZE]: 0x00
+Sector size emulation [USE_NATIVE_SECTOR]: 0x00
+Sector size [DATA_SECTOR_SIZE]: 0x00
+1st initialization after disabling sector size emulation [INI_TIMEOUT_EMU]: 0x00
+Class 6 commands control [CLASS_6_CTRL]: 0x00
+Number of addressed group to be Released[DYNCAP_NEEDED]: 0x00
+Exception events control [EXCEPTION_EVENTS_CTRL]: 0x0000
+Exception events status[EXCEPTION_EVENTS_STATUS]: 0x0000
+Extended Partitions Attribute [EXT_PARTITIONS_ATTRIBUTE]: 0x0000
+Context configuration [CONTEXT_CONF[51]]: 0x00
+[...]
+Packed command status [PACKED_COMMAND_STATUS]: 0x00
+Packed command failure index [PACKED_FAILURE_INDEX]: 0x00
+Power Off Notification [POWER_OFF_NOTIFICATION]: 0x01
+Control to turn the Cache ON/OFF [CACHE_CTRL]: 0x01
+eMMC Firmware Version:
+eMMC Life Time Estimation A [EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A]: 0x01
+eMMC Life Time Estimation B [EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B]: 0x01
+eMMC Pre EOL information [EXT_CSD_PRE_EOL_INFO]: 0x01
+Secure Removal Type [SECURE_REMOVAL_TYPE]: 0x01
+ information is configured to be removed by an erase of the physical memory
+ Supported Secure Removal Type:
+  information removed by an erase of the physical memory
+Command Queue Support [CMDQ_SUPPORT]: 0x01
+Command Queue Depth [CMDQ_DEPTH]: 32
+Command Enabled [CMDQ_MODE_EN]: 0x00
 ```
 
 
