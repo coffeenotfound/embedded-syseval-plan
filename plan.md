@@ -6,6 +6,7 @@
 * `mpstat`, `vmstat`, `iostat` aus dem Package `sysstat`
 * `smartctl` aus dem Package `smartmontools`
 * `mmc` aus dem Package `mmc-utils`
+* `iftop` aus dem Package `iftop`
 
 ## Probleme & Lösungen
 
@@ -27,6 +28,9 @@
   * [SMART-Informationen auslesen (unterstützte Platten)]
   * [MMC-Informationen auslesen (unterstützte Geräte)]
 * Network IO
+  * [Geräteauslastung loggen]
+  * [Netzwerkauslastung nach Host finden]
+  * [Alle Netzwerkverbindungen einsehen]
 
 
 ### Vollständigen Systemüberblick erhalten
@@ -345,7 +349,6 @@ Der IO-Durchgang misst alle Geräte inklusive Blockgeräten und Netzwerkadapter.
    0.00 B/s    0.00 B/s           0           4   805 root       20   0  491M 11140  8796 S  0.0  0.1  0:00.00 /usr/lib/udisks2/udisksd
    0.00 B/s    0.00 B/s           0           4   807 root       20   0  491M 11140  8796 S  0.0  0.1  0:00.00 /usr/lib/udisks2/udisksd
 F1Help  F2Setup F3SearchF4FilterF5Tree  F6SortByF7Nice -F8Nice +F9Kill  F10Quit
-
 ```
 
 #### SMART-Informationen auslesen (unterstützte Platten)
@@ -435,5 +438,126 @@ Command Enabled [CMDQ_MODE_EN]: 0x00
 
 
 ### Network IO
-_todo_
 
+#### Geräteauslastung loggen
+Mit `iostat -x <interval>` lässt sich die Geräteauslastung von Netzwerkinterfaces periodisch loggen.
+
+Siehe [Disk IO/Geräteauslastung loggen] für mehr Informationen.
+
+**Beispiel:**
+```
+dude@rechner:~$ iostat -x 1
+Linux 5.4.0-73-generic (rechner) 	14.06.2021 	_x86_64_	(8 CPU)
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0,68    0,15    0,27    0,04    0,00   98,87
+
+Device            r/s     w/s     rkB/s     wkB/s   rrqm/s   wrqm/s  %rrqm  %wrqm r_await w_await aqu-sz rareq-sz wareq-sz  svctm  %util
+loop0            0,09    0,00      0,20      0,00     0,00     0,00   0,00   0,00    0,18    0,00   0,00     2,38     0,00   0,32   0,00
+loop1            0,22    0,00      0,62      0,00     0,00     0,00   0,00   0,00    0,19    0,00   0,00     2,86     0,00   0,25   0,01
+loop2            0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    0,83    0,00   0,00     2,63     0,00   1,13   0,00
+loop3            0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    1,68    0,00   0,00     2,42     0,00   2,32   0,00
+loop4            0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    1,00    0,00   0,00     2,59     0,00   1,65   0,00
+loop5            0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    0,76    0,00   0,00     2,71     0,00   1,14   0,00
+loop6            0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    0,78    0,00   0,00     2,50     0,00   1,33   0,00
+loop7            0,08    0,00      0,20      0,00     0,00     0,00   0,00   0,00    0,23    0,00   0,00     2,40     0,00   0,40   0,00
+sda             21,17   25,50    575,60    804,30    12,55    24,12  37,22  48,61    0,48    0,25   0,01    27,18    31,54   0,31   1,42
+loop8            4,26    0,00      4,67      0,00     0,00     0,00   0,00   0,00    1,34    0,00   0,00     1,10     0,00   0,15   0,06
+loop9            0,21    0,00      0,61      0,00     0,00     0,00   0,00   0,00    0,28    0,00   0,00     2,94     0,00   0,32   0,01
+loop10           0,04    0,00      0,44      0,00     0,00     0,00   0,00   0,00    1,06    0,00   0,00    11,67     0,00   1,06   0,00
+loop11           0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    1,46    0,00   0,00     2,63     0,00   1,48   0,00
+loop12           0,03    0,00      0,43      0,00     0,00     0,00   0,00   0,00    1,61    0,00   0,00    14,55     0,00   1,03   0,00
+loop13           0,05    0,00      0,47      0,00     0,00     0,00   0,00   0,00    0,60    0,00   0,00    10,02     0,00   0,76   0,00
+loop14           0,09    0,00      0,50      0,00     0,00     0,00   0,00   0,00    0,18    0,00   0,00     5,41     0,00   0,40   0,00
+loop15           0,07    0,00      0,47      0,00     0,00     0,00   0,00   0,00    4,39    0,00   0,00     7,24     0,00   2,55   0,02
+loop16           0,01    0,00      0,02      0,00     0,00     0,00   0,00   0,00    8,47    0,00   0,00     2,42     0,00   6,11   0,00
+loop17           0,02    0,00      0,05      0,00     0,00     0,00   0,00   0,00    1,08    0,00   0,00     3,05     0,00   1,37   0,00
+loop18           0,00    0,00      0,00      0,00     0,00     0,00   0,00   0,00    0,00    0,00   0,00     1,00     0,00   1,00   0,00
+```
+
+#### Netzwerkauslastung nach Host finden
+**Tool:** `iftop` aus `iftop`
+
+Das Tool `iftop` ist ähnlich wie `htop` ein Fullscreen-Terminaltool und gibt die Netzwerkauslastung per Host an.
+
+Die Flags `-o 2s`, `-o 10s`, `-o 40s` sortieren die Zeilen nach der 2, 10 oder 40 Sekunden Durchschnittsauslastung.
+10 Sekunden ist der Default wenn keine Optionen gegeben werden.
+
+```
+                       191Mb                   381Mb                   572Mb                   763Mb              954Mb
+└──────────────────────┴───────────────────────┴───────────────────────┴───────────────────────┴───────────────────────
+rechner                                       => bud02s35-in-f3.1e100.net                          0b     64b    241b
+                                              <=                                                   0b     64b    346b
+rechner                                       => 82.221.107.34.bc.googleusercontent.com            0b     64b    208b
+                                              <=                                                   0b     64b    170b
+rechner                                       => 93.184.220.29                                     0b     32b    212b
+                                              <=                                                   0b     32b    368b
+rechner                                       => 141.30.62.24                                      0b      0b    364Kb
+                                              <=                                                   0b      0b   32,6Mb
+rechner                                       => 104.214.230.139                                   0b      0b    198Kb
+                                              <=                                                   0b      0b   13,7Mb
+rechner                                       => ftp-nyc.osuosl.org                                0b      0b   14,1Kb
+                                              <=                                                   0b      0b    346Kb
+rechner                                       => fra16s56-in-f4.1e100.net                          0b      0b   1,01Kb
+                                              <=                                                   0b      0b   3,00Kb
+rechner                                       => 133.247.244.35.bc.googleusercontent.com           0b      0b    788b
+                                              <=                                                   0b      0b   1,79Kb
+rechner                                       => ec2-52-38-188-32.us-west-2.compute.amazonaws      0b      0b    368b
+                                              <=                                                   0b      0b    839b
+rechner                                       => fritz.box                                         0b      0b    239b
+                                              <=                                                   0b      0b    526b
+rechner                                       => ftp-chi.osuosl.org                                0b      0b     40b
+                                              <=                                                   0b      0b     18b
+rechner                                       => 224.0.0.251                                       0b      0b     15b
+                                              <=                                                   0b      0b      0b
+
+
+
+
+
+
+
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+TX:             cum:   3,11MB   peak:   1,42Mb                                         rates:      0b    160b    578Kb
+RX:                     254MB            105Mb                                                     0b    160b   46,6Mb
+TOTAL:                  257MB            106Mb                                                     0b    320b   47,2Mb
+```
+
+#### Alle Netzwerkverbindungen einsehen
+`netstat` gibt alle offenen Netzwerkverbindungen aus.
+
+Existieren extrem viele Verbindungen an die gleiche Zieladresse kann dies auf ein Resourceleak hinweisen.
+
+```
+dude@rechnerROS:~$ netstat
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+tcp        0      0 rechner:53138           172.67.202.47:https     ESTABLISHED
+tcp        0      0 rechner:60002           ec2-52-38-188-32.:https ESTABLISHED
+Active UNIX domain sockets (w/o servers)
+Proto RefCnt Flags       Type       State         I-Node   Path
+unix  2      [ ]         DGRAM                    25526    /run/user/1000/systemd/notify
+unix  2      [ ]         DGRAM                    29087    /run/user/121/systemd/notify
+unix  2      [ ]         DGRAM                    18129    /var/spool/postfix/dev/log
+unix  3      [ ]         DGRAM                    13564    /run/systemd/notify
+unix  8      [ ]         DGRAM                    13574    /run/systemd/journal/socket
+unix  2      [ ]         DGRAM                    13582    /run/systemd/journal/syslog
+unix  21     [ ]         DGRAM                    13597    /run/systemd/journal/dev-log
+unix  3      [ ]         STREAM     CONNECTED     32507    
+unix  3      [ ]         STREAM     CONNECTED     95516    
+unix  3      [ ]         STREAM     CONNECTED     93372    
+unix  3      [ ]         STREAM     CONNECTED     35962    /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     35926    
+unix  3      [ ]         STREAM     CONNECTED     23323    
+unix  3      [ ]         STREAM     CONNECTED     27466    
+unix  3      [ ]         STREAM     CONNECTED     19234    /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     22076    
+unix  3      [ ]         STREAM     CONNECTED     23867    
+unix  3      [ ]         STREAM     CONNECTED     21450    
+unix  3      [ ]         STREAM     CONNECTED     87808    @/tmp/dbus-quoykxKVxt
+unix  3      [ ]         STREAM     CONNECTED     32765    
+unix  3      [ ]         STREAM     CONNECTED     25592    /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     14200    
+unix  3      [ ]         STREAM     CONNECTED     29178    
+[...]
+```
